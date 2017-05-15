@@ -48,7 +48,7 @@ def query_yes_no(question, default="no"):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = raw_input().lower()
+        choice = input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:
@@ -113,8 +113,15 @@ def collectData(arguments, conn):
     while(True):
         if kbfunc():
             break
+        try:
+            response = requests.get(url=url)
+        except requests.packages.urllib3.exceptions.MaxRetryError as ex:
+            print ("connection lost. terminating")
+            break;
+        except requests.exceptions.ConnectionError as ex1:
+            print ("connection lost. ConnectionError. terminating")
+            break;
 
-        response = requests.get(url=url)
         content = response.text
         result = processZeverResponse(content)
         for inverterData in result['inverter']:

@@ -1,10 +1,12 @@
 """Plot Zever Data
 Usage:
-  plotZever [--today] [--from startDate --to endDate [--totals] ]
+  plotZever [--today] [--from=startDate --to=endDate [--totals] ]
 
 Options:
   -h --help     show this
   --today       only plot today
+  --from=startDate   startdate in format yyyy-mm-dd
+  --to=endDate       endDate  in format yyyy-mm-dd
 """
 
 import sqlite3
@@ -29,13 +31,14 @@ def buildDateQuery (arguments):
         sql = sql + ' WHERE date>= "' + lower + '" AND date< "' + upper + '"'
     else:
         leadIn = ' WHERE '
-        if arguments['startDate']:
-            fromDt = parser.parse(arguments['startDate'])
-            sql = sql + ' WHERE date>= "' + str (fromDt)
+        if arguments['--from']:
+            fromDt = parser.parse(arguments['--from'])
+            sql = sql + ' WHERE date>= "' + str (fromDt) +'" '
             leadIn = ' AND '
-        if arguments['endDate']:
-            toDt = parser.parse(arguments['endDate'])
+        if arguments['--to']:
+            toDt = parser.parse(arguments['--to'])
             sql = sql + leadIn + ' date< "' + str(toDt) + '"'
+    print(sql)
     return sql
 
 def plotDetailed(arguments):
