@@ -16,14 +16,19 @@ from docopt import docopt
 import sqlite3
 import msvcrt
 import sys
+import os
+
+verbose = False
+
 
 def kbfunc():
-   x = msvcrt.kbhit()
-   if x:
-      ret = ord(msvcrt.getch())
-   else:
-      ret = 0
-   return ret
+    x = msvcrt.kbhit()
+    if x:
+        ret = ord(msvcrt.getch())
+    else:
+        ret = 0
+    return ret
+
 
 def query_yes_no(question, default="no"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -56,6 +61,7 @@ def query_yes_no(question, default="no"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
 
 def processZeverResponse(content):
     """take the response from the Zever Web server and parse it"""
@@ -106,33 +112,64 @@ def processZeverResponse(content):
 
     return results
 
-def collectData(arguments, conn):
-    url = arguments['<URL>'] + '/home.cgi'
 
-    interval = 30 #(seconds)
-    while(True):
+def startPolling(url):
+    """poll the server until it responds again"""
+    print ('going into polling mode.')
+    while True:
+        response = os.system('ping -n 1 {}'.format(url))
+        if response == 0:  # ping returns non zero value if it fails
+            print("{}: resuming data collection.".format(datetime.now()))
+            return
+
+        timeToSleep = 120  # wait 2 minutes
+        ts = datetime.now()
+        if ts.hour > 20:
+            timeToSleep = 3600 * (5 + 24 - ts.hour) # start at 5 am
+        elif ts.hour < 5:
+            timeToSleep = 3600 * ts.hour
+        print("sleeping {} seconds".format(timeToSleep))
+        time.sleep(timeToSleep)
+
+
+def collectData(arguments, conn, verbose):
+    url = 'http://{}/home.cgi'.format(arguments['<URL>'])
+    lastreading = 0
+
+    interval = 30  # (seconds)
+    while (True):
         if kbfunc():
             break
         try:
             response = requests.get(url=url)
         except requests.packages.urllib3.exceptions.MaxRetryError as ex:
-            print ("connection lost. terminating")
-            break;
+            print("connection lost.")
+            if lastreading < 5:
+                startPolling(arguments['<URL>'])
+            continue
+
         except requests.exceptions.ConnectionError as ex1:
-            print ("connection lost. ConnectionError. terminating")
-            break;
+            print("connection lost. ConnectionError.")
+            if lastreading < 5:
+                startPolling(arguments['<URL>'])
+            continue
 
         content = response.text
         result = processZeverResponse(content)
         for inverterData in result['inverter']:
-            #(date text, SN text, PAC_W int,  E_TODAY real, Status text)
-            params = (str(datetime.now()), inverterData['SN'],inverterData['PAC(W)'],inverterData['E_Today(KWh)'],inverterData['Status'])
+            lastreading = int(inverterData['PAC(W)'])
+            # (date text, SN text, PAC_W int,  E_TODAY real, Status text)
+
+            params = (str(datetime.now()), inverterData['SN'], inverterData['PAC(W)'], inverterData['E_Today(KWh)'],
+                      inverterData['Status'])
             sql = 'INSERT INTO inverterData VALUES(?,?,?,?,?)'
             conn.execute(sql, params)
             conn.commit()
 
-        print (result)
+        if verbose:
+            print(result)
         time.sleep(interval)
+
 
 def initDB(arguments, conn):
     print('Initialising DB - all data are getting lost')
@@ -142,16 +179,19 @@ def initDB(arguments, conn):
         c.execute('''CREATE TABLE inverterData
                  (date text, SN text, PAC_W int,  E_TODAY real, Status text)''')
         conn.commit()
-        print ('DB Initalised')
+        print('DB Initalised')
     else:
         print("DB not initialised")
+
 
 if __name__ == '__main__':
     conn = sqlite3.connect('zeverData.db')
     arguments = docopt(__doc__)
-    print(arguments)
+    verbose = arguments['--verbose']
+    if verbose:
+        print(arguments)
     if arguments['--initDB']:
         initDB(arguments, conn)
     else:
-        collectData(arguments, conn)
+        collectData(arguments, conn, verbose)
     conn.close()
