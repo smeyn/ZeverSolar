@@ -14,7 +14,6 @@ import time
 from datetime import datetime
 from docopt import docopt
 import sqlite3
-import msvcrt
 import sys
 import os
 
