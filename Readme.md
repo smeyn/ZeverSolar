@@ -9,12 +9,18 @@ Please note that unlike, for example (/solmoller/eversolar-monitor)[https://gith
 
 The plot application (plotZever.py) creates a simple plot of the generation data.
 
+Environment: Python 3, Pip 7+
 Prerequisite: docopt.py
 
+## Install Requirements
+
+	pip install -r requirements.txt
 
 ## Initial setup (initialise the database)
 
     python zever.py -initDB
+	
+Note: if this line fails, delete all .db files in the directory and try again
 
 ## Run the data collector
 
