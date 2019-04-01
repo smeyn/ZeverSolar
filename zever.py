@@ -20,15 +20,6 @@ import os
 verbose = False
 
 
-def kbfunc():
-    x = msvcrt.kbhit()
-    if x:
-        ret = ord(msvcrt.getch())
-    else:
-        ret = 0
-    return ret
-
-
 def query_yes_no(question, default="no"):
     """Ask a yes/no question via raw_input() and return their answer.
 
@@ -137,8 +128,6 @@ def collectData(arguments, conn, verbose):
 
     interval = 30  # (seconds)
     while (True):
-        if kbfunc():
-            break
         try:
             response = requests.get(url=url)
         except requests.packages.urllib3.exceptions.MaxRetryError as ex:
