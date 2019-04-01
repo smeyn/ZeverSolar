@@ -3,9 +3,9 @@
 The ZeverSolar inverters have a (small) web server. Opening that page displays the
 current readings for that website.
 The Python application directly accesses the webserver, extracts the current readings
-and stores them in a SqlLite Db.
+and stores them in a SQLite Db.
 
-Please note that unlike, for example (solmoller's eversolar-monitor)[https://github.com/solmoller/eversolar-monitor] , this script interacts with the HTTP Web server and not the serial, Telnet or other connections ZeverSolar might operate on.
+Please note that unlike, for example solmoller's [eversolar-monitor](https://github.com/solmoller/eversolar-monitor), this script interacts with the HTTP Web server and not the serial, Telnet or other connections ZeverSolar might operate on.
 
 The plot application (plotZever.py) creates a simple plot of the generation data.
 
@@ -29,3 +29,4 @@ Note: if this line fails, delete all .db files in the directory and try again
 ## Plot today's data
 
 	python plotZever.py --today
+
