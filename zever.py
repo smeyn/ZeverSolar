@@ -123,13 +123,16 @@ def startPolling(url):
 
 
 def collectData(arguments, conn, verbose):
-    url = 'http://{}/home.cgi'.format(arguments['<URL>'])
+    url = 'http://{}/home.cgi'.format(arguments['<URL>'])'
+	# supported languages: ["en_us", "de", "zh_cn"]
+	# default: zn_cn . Sadly no en_au
+	cookies = {"customer_l": "en_us"}
     lastreading = 0
 
     interval = 30  # (seconds)
     while (True):
         try:
-            response = requests.get(url=url)
+            response = requests.get(url=url, cookies=cookies)
         except requests.packages.urllib3.exceptions.MaxRetryError as ex:
             print("connection lost.")
             if lastreading < 5:
