@@ -18,13 +18,13 @@ Prerequisite: docopt.py
 
 ## Initial setup (initialise the database)
 
-    python zever.py -initDB
+	python zever.py -initDB
 	
 Note: if this line fails, delete all .db files in the directory and try again
 
 ## Run the data collector
 
-    python zever.py <url of inverter web server>
+	python zever.py <url_of_inverter_web_server>
 
 ## Plot today's data
 
