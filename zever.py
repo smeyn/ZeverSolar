@@ -20,15 +20,6 @@ import os
 verbose = False
 
 
-def kbfunc():
-    x = msvcrt.kbhit()
-    if x:
-        ret = ord(msvcrt.getch())
-    else:
-        ret = 0
-    return ret
-
-
 def query_yes_no(question, default="no"):
     """Ask a yes/no question via raw_input() and return their answer.
 
@@ -133,14 +124,16 @@ def startPolling(url):
 
 def collectData(arguments, conn, verbose):
     url = 'http://{}/home.cgi'.format(arguments['<URL>'])
+    
+	# supported languages: ["en_us", "de", "zh_cn"]
+    # default: zn_cn . Sadly no en_au
+    cookies = {"customer_l": "en_us"}
     lastreading = 0
 
     interval = 30  # (seconds)
     while (True):
-        if kbfunc():
-            break
         try:
-            response = requests.get(url=url)
+            response = requests.get(url=url, cookies=cookies)
         except requests.packages.urllib3.exceptions.MaxRetryError as ex:
             print("connection lost.")
             if lastreading < 5:

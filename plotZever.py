@@ -9,7 +9,6 @@ Options:
   --to=endDate       endDate  in format yyyy-mm-dd
 """
 
-import msvcrt
 import sqlite3
 import time
 import datetime
