@@ -105,7 +105,7 @@ def processZeverResponse(content):
 
 def startPolling(url):
     """poll the server until it responds again"""
-    print ('going into polling mode.')
+    print('going into polling mode.')
     while True:
         response = os.system('ping -n 1 {}'.format(url))
         if response == 0:  # ping returns non zero value if it fails
@@ -115,17 +115,31 @@ def startPolling(url):
         timeToSleep = 120  # wait 2 minutes
         ts = datetime.now()
         if ts.hour > 20:
-            timeToSleep = 3600 * (5 + 24 - ts.hour) # start at 5 am
+            timeToSleep = 3600 * (5 + 24 - ts.hour)  # start at 5 am
         elif ts.hour < 5:
             timeToSleep = 3600 * ts.hour
         print("sleeping {} seconds".format(timeToSleep))
         time.sleep(timeToSleep)
 
 
+def correct_E_Today(kwh):
+    """correct a bug in the data provided by Zever.
+    the decimal portion for values less than 0.010 is 
+    missing the leading zero, e.g
+    5.9 is actuall 5.09
+    whereas 5.90 is 5.90
+    """
+
+    parts = kwh.split('.')
+    if len(parts[1]) == 1:
+        kwh = '{}.0{}'.format(parts[0], parts[1])
+    return kwh
+
+
 def collectData(arguments, conn, verbose):
     url = 'http://{}/home.cgi'.format(arguments['<URL>'])
-    
-	# supported languages: ["en_us", "de", "zh_cn"]
+
+    # supported languages: ["en_us", "de", "zh_cn"]
     # default: zn_cn . Sadly no en_au
     cookies = {"customer_l": "en_us"}
     lastreading = 0
@@ -152,7 +166,10 @@ def collectData(arguments, conn, verbose):
             lastreading = int(inverterData['PAC(W)'])
             # (date text, SN text, PAC_W int,  E_TODAY real, Status text)
 
-            params = (str(datetime.now()), inverterData['SN'], inverterData['PAC(W)'], inverterData['E_Today(KWh)'],
+            params = (str(datetime.now()),
+                      inverterData['SN'],
+                      inverterData['PAC(W)'],
+                      correct_E_Today(inverterData['E_Today(KWh)']),
                       inverterData['Status'])
             sql = 'INSERT INTO inverterData VALUES(?,?,?,?,?)'
             conn.execute(sql, params)
