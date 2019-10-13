@@ -16,13 +16,12 @@ from dateutil import parser
 from datetime import datetime, timedelta
 
 
-
-
-
 if __name__ == '__main__':
     conn = sqlite3.connect('zeverData.db')
     arguments = docopt(__doc__)
     print(arguments)
-	# does not seem like a safe idea to store key in code?
-    plotly.tools.set_credentials_file(username='stephanmeyn', api_key='Rh3pgWgqtK92PR7yYz9A')
-    #plot(arguments)
+    # does not seem like a safe idea to store key in code?
+    # it's a revoked api key
+    plotly.tools.set_credentials_file(
+        username='stephanmeyn', api_key='Rh3pgWgqtK92PR7yYz9A')
+    # plot(arguments)
